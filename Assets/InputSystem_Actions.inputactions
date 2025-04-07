@@ -89,7 +89,7 @@
                 {
                     "name": "Glide",
                     "type": "Button",
-                    "id": "5ae6c943-e030-4f37-b674-63d2ec5f2617",
+                    "id": "c60b57bd-caa6-4110-923b-b2b29ad18cd4",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -484,7 +484,7 @@
                 },
                 {
                     "name": "",
-                    "id": "e26c7fca-e4ea-482c-acad-3b2e4bd1d41c",
+                    "id": "edce772b-418a-4e2c-985c-094c8034c53d",
                     "path": "<Keyboard>/g",
                     "interactions": "",
                     "processors": "",
