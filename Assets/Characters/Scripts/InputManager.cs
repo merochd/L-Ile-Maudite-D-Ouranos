@@ -34,7 +34,7 @@ public class InputManager : MonoBehaviour
     public Vector2 move;
     public Vector2 look;
     public bool isSprinting;
-    public bool isCrouching = false;
+    public bool isCrouching =false;
 
     public bool isGliding;
 
@@ -127,13 +127,13 @@ public class InputManager : MonoBehaviour
 
 
 
-    private void OnCrouch(InputAction.CallbackContext context)
+   private void OnCrouch(InputAction.CallbackContext context)
+{
+    if (context.started)
     {
-        if (context.started)
-        {
-            isCrouching = !isCrouching;
-        }
+        isCrouching = !isCrouching;
     }
+}
 
     private void OnJump(InputAction.CallbackContext context)
     {
@@ -155,10 +155,10 @@ public class InputManager : MonoBehaviour
         isSprinting = context.started;
     }
     private void OnGlide(InputAction.CallbackContext context)
+{
+    if (context.started)
     {
-        if (context.started)
-        {
-            GameManager.player.ToggleGlide();
-        }
+        GameManager.player.ToggleGlide();
     }
+}
 }
