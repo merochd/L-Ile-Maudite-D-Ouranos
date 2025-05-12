@@ -1030,6 +1030,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1447084179077071629, guid: c936649ca1898e4bfbc387691942af92, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.995213
+      objectReference: {fileID: 0}
+    - target: {fileID: 1447084179077071629, guid: c936649ca1898e4bfbc387691942af92, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.09770698
+      objectReference: {fileID: 0}
+    - target: {fileID: 1447084179077071629, guid: c936649ca1898e4bfbc387691942af92, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.002152149
+      objectReference: {fileID: 0}
+    - target: {fileID: 1447084179077071629, guid: c936649ca1898e4bfbc387691942af92, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.00021129151
+      objectReference: {fileID: 0}
     - target: {fileID: 5422273481262659531, guid: c936649ca1898e4bfbc387691942af92, type: 3}
       propertyPath: m_Name
       value: PlayerV1 1
@@ -1088,19 +1104,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6599733960839113797, guid: c936649ca1898e4bfbc387691942af92, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.9952128
+      value: -0.995213
       objectReference: {fileID: 0}
     - target: {fileID: 6599733960839113797, guid: c936649ca1898e4bfbc387691942af92, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.09770882
+      value: -0.09770697
       objectReference: {fileID: 0}
     - target: {fileID: 6599733960839113797, guid: c936649ca1898e4bfbc387691942af92, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.0021515035
+      value: -0.00215215
       objectReference: {fileID: 0}
     - target: {fileID: 6599733960839113797, guid: c936649ca1898e4bfbc387691942af92, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.00021123208
+      value: 0.00021129155
+      objectReference: {fileID: 0}
+    - target: {fileID: 8029212531289302594, guid: c936649ca1898e4bfbc387691942af92, type: 3}
+      propertyPath: walkableWallLayer.m_Bits
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
