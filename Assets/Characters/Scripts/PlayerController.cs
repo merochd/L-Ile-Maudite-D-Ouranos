@@ -23,11 +23,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer = 1;
     [SerializeField] private LayerMask walkableWallLayer;
 
-
     [Header("Références")]
     private Rigidbody rb;
     private Animator animator;
     private InputManager input;
+    [SerializeField] private Transform cameraTransform;
 
     [Header("États du Joueur")]
     private bool isGrounded;
@@ -37,7 +37,6 @@ public class PlayerController : MonoBehaviour
     private bool isCrouching;
     private bool gravityState;
     private bool wasFalling = false;
-
     private bool onWall;
 
     [Header("Interpolations Mouvement")]
@@ -46,6 +45,7 @@ public class PlayerController : MonoBehaviour
     private float smoothedMoveSpeed;
 
     [Header("Timers Internes")]
+    private float lastJumpPressTime = -1f;
     [SerializeField] private float fallSpeedThreshold = -12f;
     [SerializeField] private float fallHeightThreshold = 6f;
     private float fallStartY;
@@ -62,13 +62,6 @@ public class PlayerController : MonoBehaviour
     {
         ApplyGravity();
         MovementCharacter();
-        if (gravityState)
-            GravityPower();
-
-        if (isGliding)
-        {
-            ToggleGlide();
-        }
     }
 
     void Update()
@@ -78,11 +71,9 @@ public class PlayerController : MonoBehaviour
         HandleFallingState();
 
         if (Input.GetKeyDown(KeyCode.G) || Input.GetKeyDown(KeyCode.JoystickButton2))
-        {
-            if (!isGrounded)
-                ToggleGravity();
-        }
-
+            ToggleGravity();
+        if (gravityState)
+            GravityPower();
     }
 
     private void CheckGround()
@@ -112,20 +103,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     private void HandleFallingState()
     {
-        bool isInAir = !isGrounded && !isJumping && !isGliding;
-
-        if (isInAir)
+        if (!isGrounded && !isJumping && !isGliding)
         {
-
             if (!wasFalling && rb.linearVelocity.y < fallSpeedThreshold)
             {
                 fallStartY = transform.position.y;
                 wasFalling = true;
             }
-
             animator.SetBool("IsFalling", wasFalling);
         }
         else
@@ -133,19 +119,16 @@ public class PlayerController : MonoBehaviour
             if (wasFalling)
             {
                 float fallDistance = fallStartY - transform.position.y;
-
                 if (fallDistance > fallHeightThreshold)
                 {
                     animator.SetTrigger("FallImpact");
                     StartCoroutine(TriggerGetUpAfterDelay(1f));
                 }
             }
-
             wasFalling = false;
             animator.SetBool("IsFalling", false);
         }
     }
-
 
     private void MovementCharacter()
     {
@@ -171,7 +154,6 @@ public class PlayerController : MonoBehaviour
         transform.position += transform.forward * moveForward;
     }
 
-
     private void ApplyGravity()
     {
         float gravityForce = isGliding
@@ -182,7 +164,7 @@ public class PlayerController : MonoBehaviour
 
     private void AnimatorStates()
     {
-        animator.SetFloat("Forward", smoothedMoveY);
+        animator.SetFloat("Forward", smoothedMoveY * smoothedMoveSpeed);
         animator.SetFloat("Turn", smoothedMoveX);
         animator.SetBool("Crouch", isCrouching);
         animator.SetBool("OnGround", isGrounded);
@@ -191,66 +173,63 @@ public class PlayerController : MonoBehaviour
 
     public void Jump()
     {
-
-        CheckGround();
-
         if (isGrounded)
         {
             isJumpBeginning = true;
             isJumping = true;
-
             DOVirtual.DelayedCall(0.1f, () => isJumpBeginning = false);
-
             rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
-
-            isGrounded = false;
-
+            lastJumpPressTime = Time.time;
         }
-        else if (!isGrounded && !isGliding && rb.linearVelocity.y <= 0f)
+        else
         {
-            ToggleGlide();
+            // Activation du planeur en l'air si pas déjà en glide
+            if (!isGliding)
+            {
+                ToggleGlide();
+            }
+            lastJumpPressTime = -1f;
         }
     }
-
 
     public void ToggleGlide()
     {
-
-        if (isGrounded || isJumpBeginning || rb.linearVelocity.y > 0f)
+        if (isGrounded || onWall) 
             return;
 
-        isGliding = true;
-        rb.useGravity = false;
-        animator.SetBool("Gliding", true);
-        animator.SetBool("IsFalling", false);
+        isGliding = !isGliding;
+        animator.SetBool("Gliding", isGliding);
+        animator.SetBool("IsFalling", !isGliding);
+
+        if (isGliding)
+        {
+            // On fixe la vitesse de chute verticale à glideDescentRate
+            Vector3 v = rb.linearVelocity;
+            v.y = glideDescentRate;
+            rb.linearVelocity = v;
+        }
     }
+
 
     public void GlideUpdate()
     {
         if (!isGliding) return;
 
-
         smoothedMoveX = Mathf.Lerp(smoothedMoveX, input.move.x, Time.deltaTime * 10f);
         smoothedMoveY = Mathf.Lerp(smoothedMoveY, input.move.y, Time.deltaTime * 10f);
-
         Vector3 moveDirection = (transform.forward * smoothedMoveY + transform.right * smoothedMoveX).normalized;
 
-
-        Vector2 currentHorVel = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
-        Vector2 desiredHorVel = new Vector2(moveDirection.x, moveDirection.z) * glideSpeed;
-        Vector2 diff = desiredHorVel - currentHorVel;
-
-        rb.AddForce(new Vector3(diff.x, 0, diff.y), ForceMode.Acceleration);
-
+        Vector2 horVel = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
+        Vector2 desiredMove = new Vector2(moveDirection.x, moveDirection.z) * glideSpeed;
+        Vector2 offsetVel = desiredMove - horVel;
+        rb.AddForce(new Vector3(offsetVel.x, 0, offsetVel.y), ForceMode.Acceleration);
 
         if (rb.linearVelocity.y < glideDescentRate)
             rb.AddForce(Vector3.up * glideUpForce, ForceMode.Acceleration);
 
-
-        float turnAmount = smoothedMoveX * turnSpeed * Time.deltaTime * glideTurnMultiplier;
-        transform.rotation *= Quaternion.AngleAxis(turnAmount, Vector3.up);
+        float turn = smoothedMoveX * turnSpeed * Time.deltaTime * glideTurnMultiplier;
+        transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
     }
-
 
     public void ToggleGravity()
     {
@@ -260,38 +239,35 @@ public class PlayerController : MonoBehaviour
 
     public void GravityPower()
     {
-        if (!gravityState || isJumping || isGliding)
+        if (!gravityState || isJumping)
             return;
 
-
-
+        RaycastHit hit;
         Vector3 origin = transform.position + transform.up * 0.7f;
-        Vector3 direction = (transform.forward - transform.up).normalized;
-        float maxDistance = 1.8f;
+        Vector3 dir = (transform.forward - transform.up).normalized;
+        float maxDist = 1.8f;
 
-        if (Physics.Raycast(origin, direction, out RaycastHit hit, maxDistance, walkableWallLayer))
+        if (Physics.Raycast(origin, dir, out hit, maxDist, walkableWallLayer))
         {
             Wall wall = hit.collider.GetComponent<Wall>();
-            if (wall != null && !wall.isWalkable)
-                return;
+            if (wall != null && !wall.isWalkable) return;
 
-            DoRotateToNormal(hit.normal);
+            // Marche murale
             onWall = true;
-
-            rb.useGravity = true;
             animator.SetBool("isWall", true);
+            rb.useGravity = true;
             StopGlide();
+            DoRotateToNormal(hit.normal);
         }
         else
         {
-            DoRotateToNormal(Vector3.up);
             onWall = false;
-
-            rb.useGravity = false;
             animator.SetBool("isWall", false);
+            rb.useGravity = false;
+            StopGlide();
+            DoRotateToNormal(Vector3.up);
         }
     }
-
 
     private void DoRotateToNormal(Vector3 normal)
     {
@@ -300,8 +276,6 @@ public class PlayerController : MonoBehaviour
 
         Quaternion endRotation = Quaternion.FromToRotation(transform.up, normal) * transform.rotation;
         transform.DORotateQuaternion(endRotation, 1f);
-
-
     }
 
     private IEnumerator TriggerGetUpAfterDelay(float delay)
@@ -312,12 +286,9 @@ public class PlayerController : MonoBehaviour
 
     private void StopGlide()
     {
-        if (onWall == true)
-        {
-            isGliding = false;
-            animator.SetBool("Gliding", false);
-            animator.SetBool("IsFalling", false);
-        }
-
+        // Arrêt systématique du planeur
+        isGliding = false;
+        animator.SetBool("Gliding", false);
+        animator.SetBool("IsFalling", false);
     }
 }
