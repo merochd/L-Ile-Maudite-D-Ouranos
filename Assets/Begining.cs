@@ -23,6 +23,7 @@ public class Begining : MonoBehaviour
             {
                 isCanvasVisible = !isCanvasVisible;
                 uibegining.SetActive(isCanvasVisible);
+                Destroy(this);
             }
         }
     }
