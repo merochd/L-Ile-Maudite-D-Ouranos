@@ -8,9 +8,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float crouchSpeed = 2.5f;
     [SerializeField] private float runSpeed = 6f;
     [SerializeField] private float sprintSpeed = 9f;
+    // ***************************************************************
     [SerializeField] private float turnSpeed = 270f;
+    // ***************************************************************
     [SerializeField] private float jumpPower = 7.5f;
     [SerializeField] private float gravityStrength = -15f;
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    [SerializeField] private float rotationX = 0f;
+    public float mouseSensitivity = 2f;
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     [Header("Planeur - Paramètres")]
     [SerializeField] private float glideSpeed = 20f;
@@ -28,6 +34,8 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
     private InputManager input;
     [SerializeField] private Transform cameraTransform;
+    [SerializeField] private GameObject camera;
+    
 
     [Header("États du Joueur")]
     private bool isGrounded;
@@ -39,10 +47,12 @@ public class PlayerController : MonoBehaviour
     private bool wasFalling = false;
     private bool onWall;
 
+    // ***************************************************************
     [Header("Interpolations Mouvement")]
     private float smoothedMoveX;
     private float smoothedMoveY;
     private float smoothedMoveSpeed;
+    // ***************************************************************
 
     [Header("Timers Internes")]
     private float lastJumpPressTime = -1f;
@@ -132,15 +142,36 @@ public class PlayerController : MonoBehaviour
 
     private void MovementCharacter()
     {
+        // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV<
         if (isGliding)
         {
             GlideUpdate();
             return;
         }
-
+        
         isCrouching = input.isCrouching;
         bool isSprinting = input.isSprinting;
+        // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV>
+        
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        
+        
+        transform.Rotate(Vector3.up * mouseX); // Rotation horizontale (Yaw)
+        rotationX -= mouseY;
+        rotationX = Mathf.Clamp(rotationX, -90f, 90f); // Empêche de regarder trop haut/bas
+        camera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+        
+        float moveX = Input.GetAxis("Horizontal"); // Q / D (ou A / D en QWERTY)
+        float moveZ = Input.GetAxis("Vertical");   // Z / S (ou W / S en QWERTY)
 
+        Vector3 move = transform.forward * moveZ + transform.right * moveX;
+        move *= isSprinting ? sprintSpeed : isCrouching ? crouchSpeed : runSpeed;
+        
+        rb.MovePosition(rb.position + move * Time.deltaTime);
+
+        
+        /*
         smoothedMoveX = Mathf.Lerp(smoothedMoveX, input.move.x, Time.deltaTime * 7f);
         smoothedMoveY = Mathf.Lerp(smoothedMoveY, input.move.y, Time.deltaTime * 7f);
 
@@ -151,7 +182,7 @@ public class PlayerController : MonoBehaviour
         transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
 
         float moveForward = smoothedMoveY * smoothedMoveSpeed * Time.deltaTime * 1.2f;
-        transform.position += transform.forward * moveForward;
+        transform.position += transform.forward * moveForward; */
     }
 
     private void ApplyGravity()
