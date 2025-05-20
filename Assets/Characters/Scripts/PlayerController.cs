@@ -38,12 +38,12 @@ public class PlayerController : MonoBehaviour
     
 
     [Header("États du Joueur")]
-    private bool isGrounded;
+    [SerializeField] private bool isGrounded;
     private bool isJumpBeginning;
     private bool isJumping;
     private bool isGliding;
     private bool isCrouching;
-    private bool gravityState;
+    [SerializeField] private bool gravityState;
     private bool wasFalling = false;
     private bool onWall;
 
@@ -81,8 +81,13 @@ public class PlayerController : MonoBehaviour
         HandleFallingState();
 
         if (Input.GetKeyDown(KeyCode.G) || Input.GetKeyDown(KeyCode.JoystickButton2))
-            ToggleGravity();
+        {
+            
+            gravityState = !gravityState;
+            Debug.Log("toggle -> gravity = " + gravityState);
+        }
         if (gravityState)
+            Debug.Log("gravity state = " + gravityState);
             GravityPower();
     }
 
@@ -159,7 +164,7 @@ public class PlayerController : MonoBehaviour
         
         transform.Rotate(Vector3.up * mouseX); // Rotation horizontale (Yaw)
         rotationX -= mouseY;
-        rotationX = Mathf.Clamp(rotationX, -90f, 90f); // Empêche de regarder trop haut/bas
+        rotationX = Mathf.Clamp(rotationX, -45f, 45f); // Empêche de regarder trop haut/bas
         camera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
         
         float moveX = Input.GetAxis("Horizontal"); // Q / D (ou A / D en QWERTY)
@@ -269,18 +274,19 @@ public class PlayerController : MonoBehaviour
     }
 
     public void GravityPower()
-    {
+    { 
+        Debug.Log("on rentre dans gravity power");
         if (!gravityState || isJumping)
             return;
 
         RaycastHit hit;
         Vector3 origin = transform.position + transform.up * 0.7f;
         Vector3 dir = (transform.forward - transform.up).normalized;
-        float maxDist = 1.8f;
+        float maxDist = 5f;
 
         if (Physics.Raycast(origin, dir, out hit, maxDist, walkableWallLayer))
         {
-            Wall wall = hit.collider.GetComponent<Wall>();
+            Wall wall = hit.collider.gameObject.GetComponent<Wall>();
             if (wall != null && !wall.isWalkable) return;
 
             // Marche murale
