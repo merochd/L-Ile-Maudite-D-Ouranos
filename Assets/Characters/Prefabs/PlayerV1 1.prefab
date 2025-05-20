@@ -1509,7 +1509,7 @@ GameObject:
   - component: {fileID: 6417809070378927186}
   m_Layer: 0
   m_Name: PlayerV1 1
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1522,9 +1522,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5422273481262659531}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.0020762407, z: -0, w: -0.9999979}
+  m_LocalRotation: {x: -0, y: -0.00207664, z: 0, w: -0.9999979}
   m_LocalPosition: {x: -14.53, y: 21.4, z: -3.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.878, y: 1.878, z: 1.878}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2916939109942849570}
@@ -1635,7 +1635,7 @@ MonoBehaviour:
     m_Bits: 1
   walkableWallLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 0
   cameraTransform: {fileID: 0}
   fallSpeedThreshold: -12
   fallHeightThreshold: 6
@@ -1837,7 +1837,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1447084179077071629
 Transform:
   m_ObjectHideFlags: 0
@@ -1846,8 +1846,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5959188135779334361}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.09770881, y: -0.0021515016, z: 0.00021123186, w: -0.9952128}
-  m_LocalPosition: {x: 0.044999637, y: 2.123001, z: -2.8999999}
+  m_LocalRotation: {x: -0.118706316, y: 0.025747227, z: -0.0030791685, w: -0.9925908}
+  m_LocalPosition: {x: 0.04499343, y: 1.6461309, z: -1.4974431}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

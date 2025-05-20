@@ -34,7 +34,7 @@ public class InputManager : MonoBehaviour
     public Vector2 move;
     public Vector2 look;
     public bool isSprinting;
-    public bool isCrouching =false;
+    public bool isCrouching = false;
 
     public bool isGliding;
 
@@ -54,16 +54,16 @@ public class InputManager : MonoBehaviour
 
     void OnEnable()
     {
-        moveAction.Enable();
-        lookAction.Enable();
-        attackAction.Enable();
-        interactAction.Enable();
-        jumpAction.Enable();
-        previousAction.Enable();
-        nextAction.Enable();
-        crouchAction.Enable();
-        sprintAction.Enable();
-        glideAction.Enable();
+        moveAction?.Enable();
+        lookAction?.Enable();
+        attackAction?.Enable();
+        interactAction?.Enable();
+        jumpAction?.Enable();
+        previousAction?.Enable();
+        nextAction?.Enable();
+        crouchAction?.Enable();
+        sprintAction?.Enable();
+        glideAction?.Enable();
 
         moveAction.started += OnMove;
         lookAction.started += OnLook;
@@ -86,16 +86,16 @@ public class InputManager : MonoBehaviour
 
     void OnDisable()
     {
-        moveAction.Disable();
-        lookAction.Disable();
-        attackAction.Disable();
-        interactAction.Disable();
-        jumpAction.Disable();
-        previousAction.Disable();
-        nextAction.Disable();
-        crouchAction.Disable();
-        sprintAction.Disable();
-        glideAction.Disable();
+        moveAction?.Disable();
+        lookAction?.Disable();
+        attackAction?.Disable();
+        interactAction?.Disable();
+        jumpAction?.Disable();
+        previousAction?.Disable();
+        nextAction?.Disable();
+        crouchAction?.Disable();
+        sprintAction?.Disable();
+        glideAction?.Disable();
 
         moveAction.started -= OnMove;
         lookAction.started -= OnLook;
@@ -127,13 +127,13 @@ public class InputManager : MonoBehaviour
 
 
 
-   private void OnCrouch(InputAction.CallbackContext context)
-{
-    if (context.started)
+    private void OnCrouch(InputAction.CallbackContext context)
     {
-        isCrouching = !isCrouching;
+        if (context.started)
+        {
+            isCrouching = !isCrouching;
+        }
     }
-}
 
     private void OnJump(InputAction.CallbackContext context)
     {
@@ -155,10 +155,10 @@ public class InputManager : MonoBehaviour
         isSprinting = context.started;
     }
     private void OnGlide(InputAction.CallbackContext context)
-{
-    if (context.started)
     {
-        GameManager.player.ToggleGlide();
+        if (context.started)
+        {
+            GameManager.player.ToggleGlide();
+        }
     }
-}
 }
