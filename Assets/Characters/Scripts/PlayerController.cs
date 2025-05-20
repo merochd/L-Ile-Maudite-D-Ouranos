@@ -47,9 +47,7 @@ public class PlayerController : MonoBehaviour
     private float smoothedMoveSpeed;
 
     [Header("Timers Internes")]
-    private float lastJumpPressTime = -1f;
-    [SerializeField] private float fallSpeedThreshold = -12f;
-    [SerializeField] private float fallHeightThreshold = 6f;
+    
     private float fallStartY;
 
     void Awake()
@@ -70,9 +68,9 @@ public class PlayerController : MonoBehaviour
     {
         CheckGround();
         AnimatorStates();
-        HandleFallingState();
+    
 
-        if (Input.GetKeyDown(KeyCode.G) || Input.GetKeyDown(KeyCode.JoystickButton2))
+        if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.JoystickButton2))
             ToggleGravity();
         if (gravityState)
             GravityPower();
@@ -88,16 +86,10 @@ public class PlayerController : MonoBehaviour
             rb.useGravity = false ;
             transform.rotation = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
 
-            if (wasFalling && !isGliding)
-            {
-                animator.SetTrigger("FallImpact");
-                StartCoroutine(TriggerGetUpAfterDelay(1f));
-            }
-
-            wasFalling = false;
+            
             isGliding = false;
             animator.SetBool("Gliding", false);
-            isJumping = false;
+            isJumping = true ;
         }
         else
         {
@@ -106,32 +98,7 @@ public class PlayerController : MonoBehaviour
     }
     
 
-    private void HandleFallingState()
-    {
-        if (!isGrounded && !isJumping && !isGliding)
-        {
-            if (!wasFalling && rb.linearVelocity.y < fallSpeedThreshold)
-            {
-                fallStartY = transform.position.y;
-                wasFalling = true;
-            }
-            animator.SetBool("IsFalling", wasFalling);
-        }
-        else
-        {
-            if (wasFalling)
-            {
-                float fallDistance = fallStartY - transform.position.y;
-                if (fallDistance > fallHeightThreshold)
-                {
-                    animator.SetTrigger("FallImpact");
-                    StartCoroutine(TriggerGetUpAfterDelay(1f));
-                }
-            }
-            wasFalling = false;
-            animator.SetBool("IsFalling", false);
-        }
-    }
+   
 
     private void MovementCharacter()
     {
@@ -181,19 +148,10 @@ public class PlayerController : MonoBehaviour
         {
             isJumpBeginning = true;
             isJumping = true;
-            DOVirtual.DelayedCall(0.1f, () => isJumpBeginning = false);
             rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
-            lastJumpPressTime = Time.time;
+           
         }
-        else if (!isGrounded && !isGliding && rb.linearVelocity.y <= 0f)
-        {
-            ToggleGlide();
-            lastJumpPressTime = -1f;
-        }
-        else
-        {
-            lastJumpPressTime = Time.time;
-        }
+        
     }
 
     public void ToggleGlide()
@@ -201,7 +159,7 @@ public class PlayerController : MonoBehaviour
         if (isGrounded) return;
         isGliding = !isGliding;
         animator.SetBool("Gliding", isGliding);
-        animator.SetBool("IsFalling", !isGliding);
+   
     }
 
     public void GlideUpdate()
@@ -279,11 +237,7 @@ public class PlayerController : MonoBehaviour
         
     }
 
-    private IEnumerator TriggerGetUpAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        animator.SetTrigger("GetUp");
-    }
+  
 
     private void StopGlide()
     {
