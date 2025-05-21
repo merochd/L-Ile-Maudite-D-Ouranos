@@ -5,7 +5,7 @@ public class MainMenu : MonoBehaviour
 {
     public void PlayGame()
     {
-        SceneManager.LoadSceneAsync("Sample Vivi");
+        SceneManager.LoadScene(1);
     }
 
     public void QuitGame()
@@ -14,7 +14,7 @@ public class MainMenu : MonoBehaviour
     }
     public void RestartGame()
     {
-        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
 
