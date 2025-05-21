@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float runSpeed = 6f;
     [SerializeField] private float sprintSpeed = 9f;
     [SerializeField] private float turnSpeed = 270f;
-    [SerializeField] private float jumpPower = 7.5f;
+    [SerializeField] public float jumpPower = 7.5f;
     [SerializeField] private float gravityStrength = -15f;
 
     [Header("Planeur - Paramètres")]
@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
     [Header("Saut & Sol")]
     [SerializeField] private LayerMask groundLayer = 1;
     [SerializeField] private LayerMask walkableWallLayer;
-  
+
 
     [Header("Références")]
     private Rigidbody rb;
@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
     private float smoothedMoveSpeed;
 
     [Header("Timers Internes")]
-    
+
     private float fallStartY;
 
     void Awake()
@@ -68,7 +68,7 @@ public class PlayerController : MonoBehaviour
     {
         CheckGround();
         AnimatorStates();
-    
+
 
         if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.JoystickButton2))
             ToggleGravity();
@@ -83,22 +83,22 @@ public class PlayerController : MonoBehaviour
         {
             isGrounded = true;
             gravityState = true;
-            rb.useGravity = false ;
+            rb.useGravity = false;
             transform.rotation = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
 
-            
+
             isGliding = false;
             animator.SetBool("Gliding", false);
-            isJumping = true ;
+            isJumping = true;
         }
         else
         {
             isGrounded = false;
         }
     }
-    
 
-   
+
+
 
     private void MovementCharacter()
     {
@@ -120,7 +120,7 @@ public class PlayerController : MonoBehaviour
         float turn = smoothedMoveX * turnSpeed * Time.deltaTime;
         transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
 
-        float moveForward = smoothedMoveY * smoothedMoveSpeed * Time.deltaTime *1.2f ;
+        float moveForward = smoothedMoveY * smoothedMoveSpeed * Time.deltaTime * 1.2f;
         transform.position += transform.forward * moveForward;
     }
 
@@ -149,9 +149,9 @@ public class PlayerController : MonoBehaviour
             isJumpBeginning = true;
             isJumping = true;
             rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
-           
+
         }
-        
+
     }
 
     public void ToggleGlide()
@@ -159,7 +159,7 @@ public class PlayerController : MonoBehaviour
         if (isGrounded) return;
         isGliding = !isGliding;
         animator.SetBool("Gliding", isGliding);
-   
+
     }
 
     public void GlideUpdate()
@@ -195,57 +195,58 @@ public class PlayerController : MonoBehaviour
 
         RaycastHit hit;
         Vector3 origin = transform.position + transform.up * 0.7f;
-        Vector3 dir    = (transform.forward - transform.up).normalized;
-        float maxDist  = 1.8f;
-        
-        
+        Vector3 dir = (transform.forward - transform.up).normalized;
+        float maxDist = 1.8f;
 
 
-      
+
+
+
         if (Physics.Raycast(origin, dir, out hit, maxDist, walkableWallLayer))
         {
             Wall wall = hit.collider.GetComponent<Wall>();
-            if (wall != null && wall.isWalkable== false) return;
+            if (wall != null && wall.isWalkable == false) return;
             else
             {
                 DoRotateToNormal(hit.normal);
                 onWall = true;
-                animator.SetBool("isWall", onWall =true);
-                rb.useGravity = true ;
+                animator.SetBool("isWall", onWall = true);
+                rb.useGravity = true;
                 StopGlide();
             }
         }
         else
         {
-          DoRotateToNormal(Vector3.up);
-          rb.useGravity = false ;
-          StopGlide();
-          
+            DoRotateToNormal(Vector3.up);
+            rb.useGravity = false;
+            StopGlide();
+
         }
-        
-        
+
+
     }
 
     private void DoRotateToNormal(Vector3 normal)
     {
-          if (Vector3.Angle(transform.up, normal) < 1f)
+        if (Vector3.Angle(transform.up, normal) < 1f)
             return;
 
         Quaternion endRotation = Quaternion.FromToRotation(transform.up, normal) * transform.rotation;
         transform.DORotateQuaternion(endRotation, 1f);
 
-        
+
     }
 
-  
+
 
     private void StopGlide()
     {
-        if (onWall== true){ 
-        isGliding = false;
-        animator.SetBool("Gliding", false);
-        animator.SetBool("IsFalling", false );
+        if (onWall == true)
+        {
+            isGliding = false;
+            animator.SetBool("Gliding", false);
+            animator.SetBool("IsFalling", false);
         }
-        
-      }    
-} 
+
+    }
+}
