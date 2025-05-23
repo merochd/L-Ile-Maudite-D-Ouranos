@@ -484,17 +484,6 @@
                 },
                 {
                     "name": "",
-                    "id": "96160aa8-3bf1-4ceb-a9b3-aaa52dc660ae",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Glide",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "fe0449ee-8f92-4813-9f6e-0b346acc8c92",
                     "path": "<Keyboard>/g",
                     "interactions": "",
