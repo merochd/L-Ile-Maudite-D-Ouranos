@@ -141,13 +141,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Dans la peau d\u2019un pillard en quete d\u2019artefacts, nous decouvrons
-    le Sanctuaire d\u2019Ouranos, perdu sur une ile isolee.\nGuides par l\u2019avidite,
-    nous saisissons l\u2019Oeil du Ciel sur un autel ancien. Instantanement, le ciel
-    se dechire : une tempete divine s\u2019abat, transformant l\u2019ile en un cauchemar
-    impraticable.\nNotre corps change, nos pouvoirs explosent\u2026\nParviendrons-nous
-    a explorer les ruines et atteindre le temple pour reparer notre faute?\n\n(e)
-    pour fermer.\r\n"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a800619fdb5410345a0c1a115e50ae1d, type: 2}
   m_sharedMaterial: {fileID: -7038059498473735103, guid: a800619fdb5410345a0c1a115e50ae1d, type: 2}
