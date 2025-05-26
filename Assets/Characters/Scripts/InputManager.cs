@@ -154,6 +154,7 @@ public class InputManager : MonoBehaviour
     {
         isSprinting = context.started;
     }
+    
     private void OnGlide(InputAction.CallbackContext context)
     {
         if (context.started)
