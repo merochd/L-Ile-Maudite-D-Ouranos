@@ -1,15 +1,15 @@
-using UnityEngine;
+/*using UnityEngine;
 
 public class Bumper : MonoBehaviour
 {
-    public float bounceForce;
+    public float jumpForceMultiplier;
 
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        Rigidbody rb = collision.rigidbody;
+        Rigidbody rb = GetComponent<Collider>().gameObject;
         if (rb != null)
         {
             rb.AddForce(Vector3.up * bounceForce, ForceMode.VelocityChange);
         }
     }
-}
+}*/
