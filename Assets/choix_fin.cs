@@ -3,10 +3,9 @@ using UnityEngine.UI;
 
 public class ChoiceTrigger : MonoBehaviour
 {
-    public GameObject mainChoiceCanvas;     // Le canvas avec les 2 boutons
-    public GameObject canvasOption1;        // Canvas pour choix 1
-    public GameObject canvasOption2;        // Canvas pour choix 2
-
+    public GameObject mainChoiceCanvas;
+    public GameObject canvasOption1;
+    public GameObject canvasOption2;
     private bool hasTriggered = false;
 
     private void Start()
