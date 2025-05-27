@@ -1,0 +1,286 @@
+// using UnityEngine;
+// using DG.Tweening;
+// using System.Collections;
+
+// public class PlayerController2 : MonoBehaviour
+// {
+//     [Header("Mouvement - Vitesse")]
+//     [SerializeField] private float crouchSpeed = 2.5f;
+//     [SerializeField] private float runSpeed = 6f;
+//     [SerializeField] private float sprintSpeed = 9f;
+//     [SerializeField] private float turnSpeed = 270f;
+//     [SerializeField] private float jumpPower = 7.5f;
+//     [SerializeField] private float gravityStrength = -15f;
+//     [Space]
+//     [SerializeField]
+//     private float groundAcceleration;
+//     [SerializeField]
+//     private float groundDeceleration;
+//     [SerializeField]
+//     private float airAcceleration;
+//     [SerializeField]
+//     private float airDeceleration;
+
+//     [SerializeField]
+//     private float stopForceMultiplier;
+
+//     [Header("Planeur - Paramètres")]
+//     [SerializeField] private float glideSpeed = 20f;
+//     [SerializeField] private float glideDescentRate = -0.56f;
+//     [SerializeField] private float glideUpForce = 1.8f;
+//     [SerializeField] private float glideTurnMultiplier = 0.7f;
+//     [SerializeField] private float glideGravityScale = 0.15f;
+
+//     [Header("Saut & Sol")]
+//     [SerializeField] private LayerMask groundLayer = 1;
+//     [SerializeField] private LayerMask walkableWallLayer;
+
+//     [Header("Références")]
+//     private Rigidbody rb;
+//     private Animator animator;
+//     private InputManager input;
+//     [SerializeField] private Transform cameraTransform;
+
+//     [Header("États du Joueur")]
+//     private bool isGrounded;
+//     private bool isJumpBeginning;
+//     private bool isJumping;
+//     private bool isGliding;
+//     private bool isCrouching;
+//     private bool gravityState;
+//     private bool wasFalling = false;
+
+//     private bool onWall;
+
+//     private Vector3 inputDirection;
+
+
+//     [Header("Timers Internes")]
+//     private float fallStartY;
+
+//     void Awake()
+//     {
+//         input = GameManager.input;
+//         rb = GetComponent<Rigidbody>();
+//         animator = GetComponent<Animator>();
+//         animator.applyRootMotion = false;
+//     }
+
+//     void FixedUpdate()
+//     {
+//         CheckGround();
+//         ApplyGravity();
+//         MovementCharacter();
+//     }
+
+//     void Update()
+//     {
+//         GetInput();
+//         AnimatorStates();
+
+//         if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.JoystickButton2))
+//             ToggleGravity();
+//         if (gravityState)
+//             GravityPower();
+//     }
+
+
+//     private void GetInput()
+//     {
+//         Vector2 dir = input.move;
+
+//         Transform cameraTransform = Camera.main.transform;
+//         Vector3 cameraForward = cameraTransform.forward;
+//         Vector3 cameraRight = cameraTransform.right;
+
+//         Vector3 forwardInput = Vector3.ProjectOnPlane(cameraForward * dir.y,
+//         transform.up);
+//         Vector3 sideInput = Vector3.ProjectOnPlane(cameraRight * dir.x, transform.up);
+
+//         inputDirection = (forwardInput + sideInput).normalized;
+//     }
+
+//     private void CheckGround()
+//     {
+//         Vector3 origin = transform.position + transform.up * 0.3f;
+//         if (Physics.Raycast(origin, -transform.up, out RaycastHit hit, 0.6f,
+//         groundLayer))
+//         {
+//             isGrounded = true;
+//             gravityState = true;
+//             rb.useGravity = false;
+//             transform.rotation = Quaternion.FromToRotation(transform.up,
+//             Vector3.up) * transform.rotation;
+
+
+//             isGliding = false;
+//             animator.SetBool("Gliding", false);
+//             isJumping = true;
+//         }
+//         else
+//         {
+//             isGrounded = false;
+//         }
+//     }
+
+
+
+
+//     private void MovementCharacter()
+//     {
+//         if (isGliding)
+//         {
+//             GlideUpdate();
+//             return;
+//         }
+
+//         isCrouching = input.isCrouching;
+//         bool isSprinting = input.isSprinting;
+
+//         Vector3 currentVelocity = rb.linearVelocity;
+//         bool hasInput = inputDirection.magnitude > 0.1f;
+//         bool needHalfTurn = Vector3.Dot(inputDirection, rb.linearVelocity) < 0f;
+//         bool needToStop = !hasInput || needHalfTurn;
+//         float targetSpeed = isCrouching ? crouchSpeed : (isSprinting ?
+//         sprintSpeed : runSpeed);
+
+//         float accel = (isGrounded ? groundAcceleration : airAcceleration);
+//         float decel = (isGrounded ? groundDeceleration : airDeceleration);
+//         if (needToStop)
+//         {
+//             Vector3 stopDirection = hasInput ? inputDirection :
+//             -rb.linearVelocity.normalized;
+//             rb.AddForce(stopDirection * decel * stopForceMultiplier,
+//             ForceMode.Acceleration);
+//         }
+//         else
+//         {
+//             bool needToAccelerate = currentVelocity.magnitude < targetSpeed;
+//             Vector3 addForceDirection = needToAccelerate ? inputDirection : -inputDirection;
+//             Vector3 addForce = addForceDirection * (needToAccelerate ? accel : decel);
+
+//             rb.AddForce(addForce, ForceMode.Acceleration);
+//         }
+
+//         Vector3 rotatedForward = Vector3.RotateTowards(transform.forward,
+//         inputDirection, turnSpeed * Time.deltaTime, 0.0f).normalized;
+//         Quaternion targetRotation = Quaternion.LookRotation(rotatedForward, Vector3.up);
+//         transform.rotation = targetRotation;
+//     }
+
+
+//     private void ApplyGravity()
+//     {
+//         float gravityForce = isGliding
+//         ? gravityStrength * glideGravityScale
+//         : (isGrounded ? gravityStrength : gravityStrength * 2f);
+//         rb.AddForce(transform.up * gravityForce, ForceMode.Acceleration);
+//     }
+
+//     private void AnimatorStates()
+//     {
+
+//         Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+//         animator.SetFloat("Forward", localVelocity.z);
+//         animator.SetFloat("Turn", localVelocity.x);
+//         animator.SetBool("Crouch", isCrouching);
+//         animator.SetBool("OnGround", isGrounded);
+//         animator.SetBool("Gliding", isGliding);
+//     }
+
+//     public void Jump()
+//     {
+//         if (isGrounded)
+//         {
+//             isJumping = true;
+//             rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
+//         }
+//     }
+
+//     public void ToggleGlide()
+//     {
+//         if (isGrounded) return;
+//         isGliding = !isGliding;
+//         animator.SetBool("Gliding", isGliding);
+//     }
+
+//     public void GlideUpdate()
+//     {
+//         if (!isGliding) return;
+//         /*
+//         smoothedMoveX = Mathf.Lerp(smoothedMoveX, input.move.x, Time.deltaTime * 10f);
+//         smoothedMoveY = Mathf.Lerp(smoothedMoveY, input.move.y, Time.deltaTime * 10f);
+//         Vector3 moveDirection = (transform.forward * smoothedMoveY +
+//         transform.right * smoothedMoveX).normalized;
+
+//         Vector2 horVel = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
+//         Vector2 desiredMove = new Vector2(moveDirection.x, moveDirection.z) *
+//         glideSpeed;
+//         Vector2 offsetVel = desiredMove - horVel;
+//         rb.AddForce(new Vector3(offsetVel.x, 0, offsetVel.y), ForceMode.Acceleration);
+
+//         if (rb.linearVelocity.y < glideDescentRate)
+//         rb.AddForce(Vector3.up * glideUpForce);
+
+//         float turn = smoothedMoveX * turnSpeed * Time.deltaTime * glideTurnMultiplier;
+//         transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);*/
+//     }
+
+//     public void ToggleGravity()
+//     {
+//         gravityState = !gravityState;
+//         Debug.Log("Gravité " + (gravityState ? "activée" : "désactivée"));
+//     }
+
+//     public void GravityPower()
+//     {
+//         if (!gravityState || isJumping)
+//             return;
+
+//         RaycastHit hit;
+//         Vector3 origin = transform.position + transform.up * 0.7f;
+//         Vector3 dir = (transform.forward - transform.up).normalized;
+//         float maxDist = 1.8f;
+//         if (Physics.Raycast(origin, dir, out hit, maxDist, walkableWallLayer))
+//         {
+//             Wall wall = hit.collider.GetComponent<Wall>();
+//             if (wall != null && wall.isWalkable == false) return;
+//             else
+//             {
+//                 DoRotateToNormal(hit.normal);
+//                 onWall = true;
+//                 animator.SetBool("isWall", onWall = true);
+//                 rb.useGravity = true;
+//                 StopGlide();
+//             }
+//         }
+//         else
+//         {
+//             DoRotateToNormal(Vector3.up);
+//             rb.useGravity = false;
+//             StopGlide();
+//         }
+//     }
+
+//     private void DoRotateToNormal(Vector3 normal)
+//     {
+//         if (Vector3.Angle(transform.up, normal) < 1f)
+//             return;
+
+//         Quaternion endRotation = Quaternion.FromToRotation(transform.up,
+//         normal) * transform.rotation;
+//         transform.DORotateQuaternion(endRotation, 1f);
+
+//     }
+
+
+//     private void StopGlide()
+//     {
+//         if (onWall == true)
+//         {
+//             isGliding = false;
+//             animator.SetBool("Gliding", false);
+
+//         }
+//     }
+// }

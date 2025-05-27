@@ -12,16 +12,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private static InputManager _input;
-    public static InputManager input
-    {
-        get
-        {
-            if (_input == null) _input = FindAnyObjectByType<InputManager>().GetComponent<InputManager>();
-            return _input;
-        }
-    }
-
     private static PlayerController _player;
     public static PlayerController player
     {
