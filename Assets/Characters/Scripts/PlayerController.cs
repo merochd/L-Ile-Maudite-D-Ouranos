@@ -1,269 +1,312 @@
 using UnityEngine;
 using DG.Tweening;
-using System.Collections;
-using UnityEngine.UI;
+using System.Runtime.InteropServices;
+using System.Linq;
+using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using System;
 
+public enum ActionState
+{
+    Started,
+    Canceled,
+    Performed,
+}
+
+[RequireComponent(typeof(RunBehaviour))]
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] public GameObject followTarget;
+
     [Header("Mouvement - Vitesse")]
-    [SerializeField] private float crouchSpeed = 2.5f;
-    [SerializeField] private float runSpeed = 6f;
-    [SerializeField] private float sprintSpeed = 9f;
-    [SerializeField] private float turnSpeed = 270f;
-    [SerializeField] private float jumpPower = 7.5f;
-    [SerializeField] private float gravityStrength = -15f;
+    public float gravity;
+    public float moveSpeed;
+    public float turnSpeed;
+    public float acceleration = 20f;
+    public float smoothedTurn;
 
-    [Header("Planeur - Paramètres")]
-    [SerializeField] private float glideSpeed = 20f;
-    [SerializeField] private float glideDescentRate = -0.56f;
-    [SerializeField] private float glideUpForce = 1.8f;
-    [SerializeField] private float glideTurnMultiplier = 0.7f;
-    [SerializeField] private float glideGravityScale = 0.15f;
-
-    [Header("Saut & Sol")]
-    [SerializeField] private LayerMask groundLayer = 1;
-    [SerializeField] private LayerMask walkableWallLayer;
-
-
-    [Header("Références")]
-    private Rigidbody rb;
-    private Animator animator;
-    private InputManager input;
+    // private float smoothedMoveX;
+    // private float smoothedMoveY;
+    // private float smoothedMoveSpeed;
+    // private float smoothedTurnSpeed;
 
     [Header("États du Joueur")]
-    private bool isGrounded;
-    private bool isJumpBeginning;
-    private bool isJumping;
-    private bool isGliding;
-    private bool isCrouching;
-    private bool gravityState;
-    private bool wasFalling = false;
+    public PlayerBehaviour currentBehaviour { get; private set; }
+    public bool isGrounded { get; private set; }
 
-    private bool onWall;
+    // [Header("Mouvement - Vitesse")]
+    // [SerializeField] private float crouchSpeed = 2.5f;
+    // [SerializeField] private float runSpeed = 6f;
+    // [SerializeField] private float sprintSpeed = 9f;
+    // [SerializeField] private float turnSpeed = 270f;
 
-    [Header("Interpolations Mouvement")]
-    private float smoothedMoveX;
-    private float smoothedMoveY;
-    private float smoothedMoveSpeed;
+    // [SerializeField] public bool isGrounded = true;
+    // [SerializeField] private bool isJumpStarting = false;
+    // [SerializeField] private bool isJumping = false;
+    // [SerializeField] private bool isCrouching = false;
+    // [SerializeField] private bool isGliding = false;
+    // [SerializeField] private bool isSprinting = false;
 
-   
+    // private bool jumpPressed = false;
+
+    // private bool onWall;
+
+    // [Header("Interpolations Mouvement")]
+    // private float smoothedMoveSpeed;
+
+    // Références
+    public ActionManager actionManager;
+    private Rigidbody rb;
+    public Animator animator;
+    public Vector2 move = Vector2.zero;
+    public Vector2 look = Vector2.zero;
+
+    private PlayerBehaviour[] attachedBehaviors;
 
     void Awake()
     {
-        input = GameManager.input;
-        rb = GetComponent<Rigidbody>();
+        actionManager = GetComponent<ActionManager>();
+
         animator = GetComponent<Animator>();
         animator.applyRootMotion = false;
-    }
 
-    void FixedUpdate()
-    {
-        ApplyGravity();
-        MovementCharacter();
-        if (gravityState)
-            GravityPower();
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = false;
 
-        if (Input.GetKeyDown(KeyCode.G))
+        actionManager.AddAction("Move", ActionState.Started, OnMove);
+        actionManager.AddAction("Look", ActionState.Started, OnLook);
+
+        actionManager.AddAction("Move", ActionState.Performed, OnMove);
+        actionManager.AddAction("Look", ActionState.Performed, OnLook);
+
+        actionManager.AddAction("Move", ActionState.Canceled, OnMove);
+        actionManager.AddAction("Look", ActionState.Canceled, OnLook);
+
+        attachedBehaviors = GetComponents<PlayerBehaviour>();
+        foreach (var b in attachedBehaviors)
         {
-            ToggleGlide();
+            b.Init();
         }
 
+        ChangeBehaviour<RunBehaviour>();
     }
 
-    void Update()
+    void OnMove(InputAction.CallbackContext context)
     {
-        CheckGround();
-        AnimatorStates();
-
-
-        if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.JoystickButton2))
-        {
-            if (!isGrounded)
-                ToggleGravity();
-        }
-        
-
+        move = context.ReadValue<Vector2>();
     }
 
-    private void CheckGround()
+    void OnLook(InputAction.CallbackContext context)
+    {
+        look = Mouse.current.delta.ReadValue();
+    }
+
+    public T ChangeBehaviour<T>() where T : PlayerBehaviour
+    {
+        var behaviour = GetComponent<T>();
+
+        ChangeBehaviour(behaviour);
+
+        return behaviour;
+    }
+
+    public PlayerBehaviour ChangeBehaviour(PlayerBehaviour behaviour)
+    {
+        if (!behaviour)
+        {
+            Debug.LogError("ChangeBehaviour", behaviour);
+            throw new Exception($"ChangeBehaviour error {behaviour}");
+        }
+
+        // Debug.Log($"ChangeBehaviour {currentBehaviour?.GetType().Name} -> {behaviour.GetType().Name}");
+
+        currentBehaviour?.Exit();
+        currentBehaviour = behaviour;
+        behaviour.Enter();
+
+        return behaviour;
+    }
+
+    protected bool CheckGround()
     {
         Vector3 origin = transform.position + transform.up * 0.3f;
-        if (Physics.Raycast(origin, -transform.up, out RaycastHit hit, 0.6f, groundLayer))
+        if (Physics.Raycast(origin, -transform.up, out RaycastHit hit, 0.6f))
         {
             isGrounded = true;
-            gravityState = true;
-            rb.useGravity = false;
-            transform.rotation = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
-
-       
-            isGliding = false;
-            animator.SetBool("Gliding", false);
-            isJumping = false;
+            return true;
         }
         else
         {
             isGrounded = false;
+            return false;
         }
     }
 
-
-
-    private void MovementCharacter()
+    void FixedUpdate()
     {
-        if (isGliding)
-        {
-            GlideUpdate();
-            return;
-        }
+        CheckGround();
+        Move();
 
-        isCrouching = input.isCrouching;
-        bool isSprinting = input.isSprinting;
+        animator.SetBool("Air", !isGrounded);
+        currentBehaviour.Run();
+    }
 
-        smoothedMoveX = Mathf.Lerp(smoothedMoveX, input.move.x, Time.deltaTime * 7f);
-        smoothedMoveY = Mathf.Lerp(smoothedMoveY, input.move.y, Time.deltaTime * 7f);
+    private void Move()
+    {
+        // ApplyGravity
+        // rb.AddForce(transform.up * gravity, ForceMode.Acceleration);
 
-        float moveSpeed = isSprinting ? sprintSpeed : isCrouching ? crouchSpeed : runSpeed;
-        smoothedMoveSpeed = Mathf.Lerp(smoothedMoveSpeed, moveSpeed, Time.deltaTime * 2f);
+        Vector3 inputDirection = move.x * transform.right + move.y * transform.forward;
 
-        float turn = smoothedMoveX * turnSpeed * Time.deltaTime;
+        // Direction désirée
+        Vector3 desiredVelocity = inputDirection.normalized * moveSpeed;
+
+        // Vitesse actuelle projetée sur le plan horizontal right et forward
+        Vector3 flatVelocity = Vector3.ProjectOnPlane(rb.linearVelocity, transform.up);
+
+        // Calcul de la différence de vitesse
+        Vector3 velocityDelta = desiredVelocity - flatVelocity;
+
+        // Limite l'accélération maximale
+        Vector3 force = Vector3.ClampMagnitude(
+            velocityDelta * rb.mass / Time.fixedDeltaTime,
+            acceleration * rb.mass
+        );
+
+        Vector3 gravityForce = transform.up * gravity;
+
+        rb.AddForce(force + gravityForce, ForceMode.Acceleration);
+
+        // smoothedMoveX = Mathf.Lerp(smoothedMoveX, move.x, Time.deltaTime * 10f);
+        // smoothedMoveY = Mathf.Lerp(smoothedMoveY, move.y, Time.deltaTime * 10f);
+        // 
+
+        // float moveRight = smoothedMoveX * moveSpeed * Time.deltaTime;
+        // float moveForward = smoothedMoveY * moveSpeed * Time.deltaTime;
+
+        // transform.position += transform.forward * moveForward + transform.right * moveRight;
+
+        smoothedTurn = Mathf.Lerp(smoothedTurn, look.x, Time.deltaTime * 10f);
+        float turn = smoothedTurn * turnSpeed * Time.deltaTime;
         transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
 
-        float moveForward = smoothedMoveY * smoothedMoveSpeed * Time.deltaTime * 1.2f;
-        transform.position += transform.forward * moveForward;
+        animator.SetFloat("Forward", move.y);
+        animator.SetFloat("Right", move.x);
+        animator.SetFloat("VerticalSpeed", rb.linearVelocity.y);
+        animator.SetFloat("Turn", turn);
     }
 
+    // private void Move()
+    // {
+    //     // ApplyGravity
+    //     rb.AddForce(transform.up * gravity, ForceMode.Acceleration);
 
-    private void ApplyGravity()
-    {
-        float gravityForce = isGliding
-            ? gravityStrength * glideGravityScale
-            : (isGrounded ? gravityStrength : gravityStrength * 2f);
-        rb.AddForce(transform.up * gravityForce, ForceMode.Acceleration);
-    }
+    //     smoothedMoveX = Mathf.Lerp(smoothedMoveX, move.x, Time.deltaTime * 10f);
+    //     smoothedMoveY = Mathf.Lerp(smoothedMoveY, move.y, Time.deltaTime * 10f);
+    //     smoothedTurn = Mathf.Lerp(smoothedTurn, look.x, Time.deltaTime * 10f);
 
-    private void AnimatorStates()
-    {
-        animator.SetFloat("Forward", smoothedMoveY);
-        animator.SetFloat("Turn", smoothedMoveX);
-        animator.SetBool("Crouch", isCrouching);
-        animator.SetBool("OnGround", isGrounded);
-        animator.SetBool("Gliding", isGliding);
-    }
+    //     float moveRight = smoothedMoveX * moveSpeed * Time.deltaTime;
+    //     float moveForward = smoothedMoveY * moveSpeed * Time.deltaTime;
+    //     float turn = smoothedTurn * turnSpeed * Time.deltaTime;
 
-    public void Jump()
-    {
+    //     transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
+    //     transform.position += transform.forward * moveForward + transform.right * moveRight;
 
-        CheckGround();
+    //     animator.SetFloat("Forward", move.y);
+    //     animator.SetFloat("Right", move.x);
+    //     animator.SetFloat("Turn", turn);
+    // }
+    
+    // private void SyncAnimatorStates()
+    // {
+    //     animator.SetFloat("Forward", smoothedMoveY);
+    //     animator.SetFloat("Turn", smoothedMoveX);
+    //     animator.SetBool("OnGround", isGrounded);
+    // }
 
-        if (isGrounded)
-        {
-            
-            isJumping = true;
+    // public void Jump()
+    // {
+    //     Debug.Log($"Jump isGrounded={isGrounded}");
 
-
-            rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
-
-        }
-        
-    }
-
-
-    public void ToggleGlide()
-{
-if (isGrounded) return;
-isGliding = !isGliding;
-animator.SetBool("Gliding", isGliding);
-}
-    public void GlideUpdate()
-    {
-        if (!isGliding) return;
+    //     if (isGrounded)
+    //     {
+    //         isJumping = true;
+    //         rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
+    //     }
+    //     else
+    //     {
+    //         isGliding = !isGliding;
+    //     }
+    // }
 
 
-        smoothedMoveX = Mathf.Lerp(smoothedMoveX, input.move.x, Time.deltaTime * 25f);
-        smoothedMoveY = Mathf.Lerp(smoothedMoveY, input.move.y, Time.deltaTime * 25f);
+    // public void GlideUpdate()
+    // {
+    //     Debug.Log($"GlideUpdate isGliding={isGliding} isGrounded={isGrounded}");
 
-        Vector3 moveDirection = (transform.forward * smoothedMoveY + transform.right * smoothedMoveX).normalized;
+    //     if (isGliding == false)
+    //     {
+    //         return;
+    //     }
 
+    //     if (isGrounded)
+    //     {
+    //         isGliding = false;
+    //         return;
+    //     }
 
-        Vector2 currentHorVel = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
-        Vector2 desiredHorVel = new Vector2(moveDirection.x, moveDirection.z) * glideSpeed;
-        Vector2 diff = desiredHorVel - currentHorVel;
+    //     smoothedMoveX = Mathf.Lerp(smoothedMoveX, move.x, Time.deltaTime * 25f);
+    //     smoothedMoveY = Mathf.Lerp(smoothedMoveY, move.y, Time.deltaTime * 25f);
 
-        rb.AddForce(new Vector3(diff.x, 0, diff.y), ForceMode.Acceleration);
+    //     Vector3 moveDirection = (transform.forward * smoothedMoveY + transform.right * smoothedMoveX).normalized;
+    //     Vector2 currentHorVel = new Vector2(rb.linearVelocity.x, rb.linearVelocity.z);
+    //     Vector2 desiredHorVel = new Vector2(moveDirection.x, moveDirection.z) * glideSpeed;
+    //     Vector2 diff = desiredHorVel - currentHorVel;
 
+    //     rb.AddForce(new Vector3(diff.x, 0, diff.y), ForceMode.Acceleration);
 
-        if (rb.linearVelocity.y < glideDescentRate)
-            rb.AddForce(Vector3.up * glideUpForce, ForceMode.Acceleration);
+    //     if (rb.linearVelocity.y < glideDescentRate)
+    //         rb.AddForce(Vector3.up * glideUpForce, ForceMode.Acceleration);
 
-
-        float turnAmount = smoothedMoveX * turnSpeed * Time.deltaTime * glideTurnMultiplier;
-        transform.rotation *= Quaternion.AngleAxis(turnAmount, Vector3.up);
-    }
-
-
-    public void ToggleGravity()
-    {
-        gravityState = !gravityState;
-        Debug.Log("Gravité " + (gravityState ? "activée" : "désactivée"));
-    }
-
-    public void GravityPower()
-    {
-        if (!gravityState || isJumping || isGliding)
-            return;
+    //     float turnAmount = smoothedMoveX * turnSpeed * Time.deltaTime * glideTurnMultiplier;
+    //     transform.rotation *= Quaternion.AngleAxis(turnAmount, Vector3.up);
+    // }
 
 
 
+    // public void ToggleCrouch()
+    // {
+    //     isCrouching = !isCrouching;
+    // }
 
+    // public void SetSprinting(bool value)
+    // {
+    //     isSprinting = value;
+    // }
 
+    // public void SetMove(Vector2 value)
+    // {
+    //     move = value;
+    // }
 
-        Vector3 origin = transform.position + transform.up * 0.7f;
-        Vector3 direction = (transform.forward - transform.up).normalized;
-        float maxDistance = 1.8f;
+    // public void SetLook(Vector2 value)
+    // {
+    //     look = value;
+    // }
 
-        if (Physics.Raycast(origin, direction, out RaycastHit hit, maxDistance, walkableWallLayer))
-        {
-            Wall wall = hit.collider.GetComponent<Wall>();
-            if (wall != null && !wall.isWalkable)
-                return;
+    // public bool IsJumpPressed()
+    // {
+    //     return jumpPressed;
+    // }
 
-            DoRotateToNormal(hit.normal);
-            onWall = true;
+    // public void PressJump()
+    // {
+    //     jumpPressed = true;
+    // }
 
-            rb.useGravity = true;
-            animator.SetBool("isWall", true);
-            StopGlide();
-        }
-        else
-        {
-            DoRotateToNormal(Vector3.up);
-            onWall = false;
+    // public bool IsGrounded()
+    // {
+    //     return isGrounded; // Met à jour avec un Raycast comme tu le fais déjà
+    // }
 
-            rb.useGravity = false;
-            animator.SetBool("isWall", false);
-        }
-    }
-
-
-    private void DoRotateToNormal(Vector3 normal)
-    {
-        if (Vector3.Angle(transform.up, normal) < 1f)
-            return;
-
-        Quaternion endRotation = Quaternion.FromToRotation(transform.up, normal) * transform.rotation;
-        transform.DORotateQuaternion(endRotation, 1f);
-
-
-    }
-
-    private void StopGlide()
-    {
-        if (onWall == true)
-        {
-            isGliding = false;
-            animator.SetBool("Gliding", false);
-            animator.SetBool("IsFalling", false);
-        }
-
-    }
 }
