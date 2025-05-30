@@ -26,9 +26,20 @@ public class PauseMenu : MonoBehaviour
             Debug.Log("Touche P détectée");
 
             if (isPaused)
+            {
                 Resume();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+
             else
+            {
                 Pause();
+
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+
         }
     }
 

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 519535544253585331}
   - component: {fileID: 1375563658215332251}
-  - component: {fileID: 3060517402177122603}
+  - component: {fileID: -2417905703839362387}
   m_Layer: 5
   m_Name: ParcheminUI
   m_TagString: Untagged
@@ -46,7 +46,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1970794617232292540}
   m_CullTransparentMesh: 1
---- !u!114 &3060517402177122603
+--- !u!114 &-2417905703839362387
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -751767267, guid: 1a518b4c338503c4183877cbd9ea8dfa, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8f3b6f0f681ac1246bc6175e04186fc0, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -141,7 +141,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: '
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a800619fdb5410345a0c1a115e50ae1d, type: 2}
   m_sharedMaterial: {fileID: -7038059498473735103, guid: a800619fdb5410345a0c1a115e50ae1d, type: 2}

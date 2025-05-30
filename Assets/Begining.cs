@@ -7,11 +7,13 @@ public class Begining : MonoBehaviour
 
     void Start()
     {
+        Time.timeScale = 0f;
         // Active le canvas au démarrage
         if (uibegining != null)
         {
             uibegining.SetActive(true);
             isCanvasVisible = true;
+            Debug.Log("Canva bien activé");
         }
     }
 
@@ -19,10 +21,13 @@ public class Begining : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
+            Debug.Log("Touche E bien détectée");
+            Time.timeScale = 1f;
             if (uibegining != null)
             {
                 isCanvasVisible = !isCanvasVisible;
                 uibegining.SetActive(isCanvasVisible);
+                Debug.Log("Destruction...");
                 Destroy(this);
             }
         }
