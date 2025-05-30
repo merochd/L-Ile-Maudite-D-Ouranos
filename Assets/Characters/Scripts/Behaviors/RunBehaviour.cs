@@ -6,31 +6,42 @@ public class RunBehaviour : PlayerBehaviour
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float turnSpeed = 270f;
 
-    public override void Init()
-    {
-        animator = GetComponent<Animator>();
-    }
+    public bool isGrounded;
 
     public override void Enter()
     {
+        base.Enter();
+
+        if (!player.isGrounded)
+        {
+            player.ChangeBehaviour<AirBehaviour>();
+            return;
+        }
+
         player.gravity = gravity;
         player.moveSpeed = moveSpeed;
         player.turnSpeed = turnSpeed;
-        animator.SetBool("Run", true);
+        player.animator.SetBool("Run", true);
+        player.animator.SetBool("Air",false );
+    
     }
 
     public override void Exit()
     {
-        animator.SetBool("Run", false);
+        base.Exit();
+
+        player.animator.SetBool("Run", false);
+        
     }
 
     public override void Run()
-
     {
-    
         if (!player.isGrounded)
         {
-            player.ChangeBehaviour<AirBehaviour>();
+            player.ChangeBehaviour<AirBehaviour>().Run();
+            return;
         }
+
+        base.Run();
     }
 }

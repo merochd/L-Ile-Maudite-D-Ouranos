@@ -1,9 +1,5 @@
 using UnityEngine;
-using DG.Tweening;
-using System.Runtime.InteropServices;
-using System.Linq;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
 using System;
 
 public enum ActionState
@@ -33,6 +29,7 @@ public class PlayerController : MonoBehaviour
     [Header("États du Joueur")]
     public PlayerBehaviour currentBehaviour { get; private set; }
     public bool isGrounded { get; private set; }
+    public bool isAnimated = false;
 
     // [Header("Mouvement - Vitesse")]
     // [SerializeField] private float crouchSpeed = 2.5f;
@@ -56,12 +53,13 @@ public class PlayerController : MonoBehaviour
 
     // Références
     public ActionManager actionManager;
-    private Rigidbody rb;
+    public Rigidbody rb;
     public Animator animator;
     public Vector2 move = Vector2.zero;
     public Vector2 look = Vector2.zero;
 
     private PlayerBehaviour[] attachedBehaviors;
+    public float velocityToAnim = 0.5f;
 
     void Awake()
     {
@@ -83,10 +81,8 @@ public class PlayerController : MonoBehaviour
         actionManager.AddAction("Look", ActionState.Canceled, OnLook);
 
         attachedBehaviors = GetComponents<PlayerBehaviour>();
-        foreach (var b in attachedBehaviors)
-        {
-            b.Init();
-        }
+        foreach (var behaviour in attachedBehaviors)
+            behaviour.Init();
 
         ChangeBehaviour<RunBehaviour>();
     }
@@ -112,13 +108,16 @@ public class PlayerController : MonoBehaviour
 
     public PlayerBehaviour ChangeBehaviour(PlayerBehaviour behaviour)
     {
-        if (!behaviour)
-        {
-            Debug.LogError("ChangeBehaviour", behaviour);
-            throw new Exception($"ChangeBehaviour error {behaviour}");
-        }
+        if (currentBehaviour == behaviour)
+            return behaviour;
 
-        // Debug.Log($"ChangeBehaviour {currentBehaviour?.GetType().Name} -> {behaviour.GetType().Name}");
+        if (!behaviour)
+            {
+                Debug.LogError("ChangeBehaviour", behaviour);
+                throw new Exception($"ChangeBehaviour error {behaviour}");
+            }
+
+        Debug.Log($"ChangeBehaviour {currentBehaviour?.GetType().Name} -> {behaviour.GetType().Name}");
 
         currentBehaviour?.Exit();
         currentBehaviour = behaviour;
@@ -127,13 +126,14 @@ public class PlayerController : MonoBehaviour
         return behaviour;
     }
 
-    protected bool CheckGround()
+    public bool CheckGround()
     {
         Vector3 origin = transform.position + transform.up * 0.3f;
         if (Physics.Raycast(origin, -transform.up, out RaycastHit hit, 0.6f))
         {
             isGrounded = true;
             return true;
+            
         }
         else
         {
@@ -144,14 +144,10 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        CheckGround();
-        Move();
-
-        animator.SetBool("Air", !isGrounded);
         currentBehaviour.Run();
     }
 
-    private void Move()
+    public void Move()
     {
         // ApplyGravity
         // rb.AddForce(transform.up * gravity, ForceMode.Acceleration);
@@ -188,11 +184,24 @@ public class PlayerController : MonoBehaviour
 
         smoothedTurn = Mathf.Lerp(smoothedTurn, look.x, Time.deltaTime * 10f);
         float turn = smoothedTurn * turnSpeed * Time.deltaTime;
-        transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
+        rb.MoveRotation(rb.rotation * Quaternion.AngleAxis(turn, Vector3.up));
+        // transform.rotation *= Quaternion.AngleAxis(turn, Vector3.up);
 
-        animator.SetFloat("Forward", move.y);
-        animator.SetFloat("Right", move.x);
-        animator.SetFloat("VerticalSpeed", rb.linearVelocity.y);
+        var velocity = transform.InverseTransformDirection(rb.linearVelocity) * velocityToAnim;
+
+        var forward = Mathf.Round(velocity.z);
+        var right = Mathf.Round(velocity.x);
+        var up = velocity.y;
+        
+        Debug.DrawRay(transform.position, forward * transform.forward, Color.blue, 0.1f);
+        Debug.DrawRay(transform.position, right * transform.right, Color.red, 0.1f);
+        Debug.DrawRay(transform.position, up * transform.up, Color.cyan, 0.1f);
+
+        // Debug.Log($"Forward = {forward} ; Right = {right}; Up = {up}; Turn={turn}");
+
+        animator.SetFloat("Forward", forward);
+        animator.SetFloat("Right", right);
+        animator.SetFloat("Up", up);
         animator.SetFloat("Turn", turn);
     }
 

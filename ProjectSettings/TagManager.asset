@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 3
   tags:
   - Lore
+  - Wall
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - walkableWallLayer;
+  - Walkable
   - Water
   - UI
   - 

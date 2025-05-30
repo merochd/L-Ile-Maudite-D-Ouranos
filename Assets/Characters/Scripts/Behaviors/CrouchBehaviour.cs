@@ -9,7 +9,9 @@ public class CrouchBehaviour : PlayerBehaviour
 
     public override void Init()
     {
-        actionManager.AddAction("Crouch", context =>
+        base.Init();
+
+        player.actionManager.AddAction("Crouch", context =>
         {
             if (player.isGrounded)
             {
@@ -17,7 +19,8 @@ public class CrouchBehaviour : PlayerBehaviour
                 {
                     player.ChangeBehaviour<RunBehaviour>();
                 }
-                else {
+                else
+                {
                     player.ChangeBehaviour(this);
                 }
             }
@@ -26,21 +29,28 @@ public class CrouchBehaviour : PlayerBehaviour
 
     public override void Enter()
     {
+        base.Enter();
+
         player.moveSpeed = moveSpeed;
         player.turnSpeed = turnSpeed;
-        animator.SetBool("Crouch", true);
+        player.animator.SetBool("Crouch", true);
     }
 
     public override void Exit()
     {
-        animator.SetBool("Crouch", false);
+        base.Exit();
+
+        player.animator.SetBool("Crouch", false);
     }
 
     public override void Run()
     {
         if (!player.isGrounded)
         {
-            player.ChangeBehaviour<AirBehaviour>();
+            player.ChangeBehaviour<AirBehaviour>().Run();
+            return;
         }
+
+        base.Run();
     }
 }

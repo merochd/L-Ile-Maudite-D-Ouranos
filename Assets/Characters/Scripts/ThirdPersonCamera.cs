@@ -32,14 +32,14 @@ public class ThirdPersonCamera : MonoBehaviour
         var followDir = followTransform.forward * -maxDistance;
         var distance = maxDistance;
 
-        Debug.DrawRay(followPoint, followDir, Color.red, 0.1f);
+        // Debug.DrawRay(followPoint, followDir, Color.red, 0.1f);
 
         if (Physics.Raycast(followPoint, followDir, out RaycastHit hit, maxDistance))
         {
             distance = hit.distance + nearDistance;
         }
 
-        Debug.DrawRay(followPoint, followDir.normalized * distance, Color.green, 0.1f);
+        // Debug.DrawRay(followPoint, followDir.normalized * distance, Color.green, 0.1f);
 
         Vector3 targetPosition = followPoint + followDir.normalized * distance;
 
@@ -51,8 +51,8 @@ public class ThirdPersonCamera : MonoBehaviour
         Vector3 lookDir = followPoint - transform.position;
         Quaternion targetRotation = Quaternion.LookRotation(lookDir, player.transform.up);
 
-        Debug.DrawRay(followPoint, Vector3.up, Color.red, 0.1f);
-        Debug.DrawRay(followPoint, followTransform.up, Color.yellow, 0.1f);
+        // Debug.DrawRay(followPoint, Vector3.up, Color.red, 0.1f);
+        // Debug.DrawRay(followPoint, followTransform.up, Color.yellow, 0.1f);
 
         // Génère un petit shake naturel avec Perlin Noise
         float shakeAmount = walkShakeAmount;

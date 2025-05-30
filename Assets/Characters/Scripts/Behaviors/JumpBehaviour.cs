@@ -7,32 +7,34 @@ public class JumpBehaviour : PlayerBehaviour
 
     public override void Init()
     {
-        actionManager.AddAction("Jump", context =>
+        base.Init();
+
+        player.actionManager.AddAction("Jump", context =>
         {
-            
-            if (player.isGrounded && player.currentBehaviour != this)
+            if (player.isGrounded)
             {
                 player.ChangeBehaviour(this);
+                return;
             }
         });
     }
 
     public override void Enter()
     {
-        animator.SetTrigger("Jump");
-        rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
-    }
+        base.Enter();
 
-    public override void Exit()
-    {
-
+        player.animator.SetTrigger("Jump");
+        player.rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
     }
 
     public override void Run()
     {
         if (!player.isGrounded)
         {
-            player.ChangeBehaviour<AirBehaviour>();
+            player.ChangeBehaviour<AirBehaviour>().Run();
+            return;
         }
+
+        base.Run();
     }
 }
