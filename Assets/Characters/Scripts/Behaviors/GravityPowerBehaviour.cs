@@ -21,6 +21,7 @@ public class GravityPowerBehaviour : PlayerBehaviour
         GravityPower();
         player.ChangeBehaviour<RunBehaviour>();
         animator.SetBool("GravityPower", true);
+        Debug.Log("gravity power on");
     }
 
     public override void Exit()

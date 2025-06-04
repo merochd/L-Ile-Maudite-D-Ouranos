@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5855411626495685171}
   - component: {fileID: 3333090999881665302}
   - component: {fileID: 2177013102824329790}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PremierAutel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: -2.99, y: 0.85, z: 5.64}
   m_LocalScale: {x: 1.229273, y: 1.229273, z: 1.229273}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3413169188096681756}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2718537106506348949
@@ -122,3 +123,65 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TextLore: {fileID: 0}
+--- !u!1001 &1347122862750457037
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 361215131432056797}
+    m_Modifications:
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209115650346804958, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+      propertyPath: m_Name
+      value: soleils
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+--- !u!4 &3413169188096681756 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4463052188704570321, guid: eba35daf4263bf54fb8746647f45ba53, type: 3}
+  m_PrefabInstance: {fileID: 1347122862750457037}
+  m_PrefabAsset: {fileID: 0}
